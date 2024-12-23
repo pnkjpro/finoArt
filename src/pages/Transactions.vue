@@ -2,7 +2,13 @@
     <app-layout page-title="Transactions" page-default-back-link="/microfin">
         <ion-card>
             <ion-card-header color="light">
-                <ion-card-subtitle color="primary">Monthly Transactions &#x20B9{{ totalExpense }}</ion-card-subtitle>
+                <ion-card-subtitle v-if="selectedTransactionType != 'Loans & Advances'" color="primary">Monthly {{ selectedTransactionType }} Transactions &#x20B9{{ totals }}</ion-card-subtitle>
+                <ion-card-subtitle 
+                v-if="(selected_SubExp_TransactionType != 'Select Expense Transaction Type') && (selectedTransactionType === 'Expense')" color="primary">
+                Monthly {{ selected_SubExp_TransactionType }} Transactions &#x20B9{{ expCatTotal }}
+            </ion-card-subtitle>
+            <ion-card-subtitle v-if="(selectedTransactionType != 'Loans & Advances') && (selectedDate)" color="primary">Filtered {{ selectedTransactionType }} Transactions &#x20B9{{ filteredIncomeTransactions }}</ion-card-subtitle>
+
             </ion-card-header>
             <ion-card-header color="light">
                 <ion-card-subtitle color="primary">
@@ -38,10 +44,10 @@
                                     </svg>
                                     <ion-select v-model="selectedSortOption" interface="popover" placeholder="Sort By"
                                         class="absolute inset-0 w-full h-full opacity-0">
-                                        <ion-select-option value="created_asc">Date (Oldest First)</ion-select-option>
-                                        <ion-select-option value="created_desc">Date (Newest First)</ion-select-option>
-                                        <ion-select-option value="amount_asc">Amount (Low to High)</ion-select-option>
-                                        <ion-select-option value="amount_desc">Amount (High to Low)</ion-select-option>
+                                        <ion-select-option value="created_asc">Oldest First</ion-select-option>
+                                        <ion-select-option value="created_desc">Newest First</ion-select-option>
+                                        <ion-select-option value="amount_asc">Low to High</ion-select-option>
+                                        <ion-select-option value="amount_desc">High to Low</ion-select-option>
                                     </ion-select>
                                 </div>
                             </div>
@@ -86,6 +92,23 @@
 
                     <!-- ======================== sub filter ============================ -->
                     <!-- write your code here -->
+                    <div v-if="selectedTransactionType == 'Expense'" class="mt-2">
+                        <div class="relative">
+                                <form
+                                    class="bg-white text-gray-800 px-3 py-2 rounded-md text-sm font-medium custom-center">
+                                    <ion-select v-model="selected_SubExp_TransactionType" interface="popover" placeholder="Expense"
+                                        class="absolute inset-0 w-full h-full opacity-0">
+                                        <ion-select-option v-for="category in Object.keys(expCat_totals)" :value="category">{{ category }}</ion-select-option>
+                                    </ion-select>
+                                    <span v-text="selected_SubExp_TransactionType || 'Snacks'"></span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-2" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </form>
+                            </div>
+                    </div>
                      <!-- ======================= sub filter ends here ================== -->
                 </ion-card-subtitle>
             </ion-card-header>
@@ -131,11 +154,12 @@ import { storeToRefs } from "pinia";
 
 const toast = useToast();
 const transactionsStore = useTransactionsStore();
-const { transactions, loading, exp_categories, error } = storeToRefs(transactionsStore);
+const { transactions, expCat_totals, loading, exp_categories, error } = storeToRefs(transactionsStore);
 
 const showDatePicker = ref(false);
 const selectedDate = ref(null);
 const selectedTransactionType = ref("Expense");
+const selected_SubExp_TransactionType = ref("Select Expense Transaction Type");
 const selectedSortOption = ref("created_desc");
 
 
@@ -158,6 +182,10 @@ const clearDateFilter = () => {
 const filteredAndSortedTransactions = computed(() => {
     // Filter transactions based on selected transaction type
     let filtered = transactions.value.filter(t => t.transaction_type === selectedTransactionType.value);
+
+    if(selectedTransactionType.value === "Expense" && selected_SubExp_TransactionType.value != "Select Expense Transaction Type") {
+        filtered = filtered.filter(t => t.category_name === selected_SubExp_TransactionType.value);
+    }
 
 
     // Then filter by date if selected
@@ -191,20 +219,26 @@ const filteredAndSortedTransactions = computed(() => {
 const sortLabel = computed(() => {
     switch(selectedSortOption.value){
         case "amount_asc":
-            return "Amount (Low to High)";
+            return "Low to High";
         case "amount_desc":
-            return "Amount (High to Low)";
+            return "High to Low";
         case "created_asc":
-            return "Date (Oldest First)";
+            return "Oldest First";
         case "created_desc":
         default:
-            return "Date (Newest First)";
+            return "Newest First";
     }
 });
 
 
-const exp_transactions = computed(() => transactions.value.filter(t => t.transaction_type === "Expense"));
-const totalExpense = computed(() => exp_transactions.value.reduce((total, t) => total + t.amount, 0));
+// const exp_transactions = computed(() => transactions.value.filter(t => t.transaction_type === "Expense"));
+const filteredIncomeTransactions = computed(() => filteredAndSortedTransactions.value.reduce((total, t) => total + (t.transaction_type === selectedTransactionType.value ? t.amount : 0), 0));
+const totals = computed(() => transactions.value.reduce((total, t) => total + (t.transaction_type === selectedTransactionType.value ? t.amount : 0), 0));
+
+const expCatTotal = computed(
+    () => {
+        return expCat_totals.value[selected_SubExp_TransactionType.value] || 0;
+    });
 
 watch(()=>selectedTransactionType, (newVal, oldVal) =>{
     // transactionsStore.setTransactionType(newVal);
@@ -249,5 +283,11 @@ onMounted(() => {
     text-overflow: ellipsis;
     /* Adds the ellipsis (...) */
     max-width: 100%;
+}
+
+.custom-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 </style>

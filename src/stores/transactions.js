@@ -5,6 +5,7 @@ import axios from 'axios';
 
 export const useTransactionsStore = defineStore('transactions', () => {
     const transactions = ref([]);
+    const apiURL = import.meta.env.VITE_API_BASE_URL;
     const exp_categories = ref([]);
     const income_categories = ref([]);
     const loan_type = ref([]);
@@ -18,7 +19,7 @@ export const useTransactionsStore = defineStore('transactions', () => {
         error.value = null; // Reset error
 
         try {
-            const response = await axios.get("https://microfin.ritdos.com/api/get/apis");
+            const response = await axios.get(`${apiURL}/api/get/apis`);
             console.log(response);
             transactions.value = response.data.transactions;
             console.log("pinia transactions: ", transactions.value);
@@ -105,8 +106,42 @@ export const useTransactionsStore = defineStore('transactions', () => {
         return category.value ? category.value.cat_icon_color : 'default-icon_color'
     }
 
+    const expCat_totals = computed(
+        () => transactions.value
+        .filter(t => t.transaction_type === "Expense")
+        .reduce((sum, total) => {
+            let category_name = total.category_name;
+            if (category_name in sum){
+                sum[category_name] += total.amount;
+            } else {
+                sum[category_name] = total.amount;
+            }
+            return sum;
+        }, {}))
+
+        const expChartData = computed(() => {
+            const totals = transactions.value
+              .filter(t => t.transaction_type === "Expense")
+              .reduce((sum, total) => {
+                let category_name = total.category_name;
+                if (category_name in sum) {
+                  sum[category_name] += total.amount;
+                } else {
+                  sum[category_name] = total.amount;
+                }
+                return sum;
+              }, {});
+          
+            const sortedTotals = Object.entries(totals)
+              .sort(([, a], [, b]) => b - a) // Compare by values (amounts)
+              .slice(0, 7); // Take the top 6
+          
+            return Object.fromEntries(sortedTotals);
+          });
+          
+
     return {
-        transactions, exp_categories, income_categories, parties, loan_type, accounts, loading, error,
+        transactions, expCat_totals, expChartData, exp_categories, income_categories, parties, loan_type, accounts, loading, error,
         fetchAPIs, editTransaction, formatDateTime, catIcon, catIconColor,
     };
 });

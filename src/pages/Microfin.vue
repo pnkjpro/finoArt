@@ -112,7 +112,6 @@ import {
 import { useTransactionsStore } from "../stores/transactions";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js'
 import { Pie } from 'vue-chartjs'
-import * as chartConfig from './chartConfig.js'
 import { useBudgetStore } from "../stores/budgets";
 import Modal from '../components/base/Modal.vue';
 import BudgetModal from '../components/base/BudgetModal.vue';
@@ -128,7 +127,7 @@ ChartJS.register(ArcElement, Tooltip, Legend)
 const transactionsStore = ref([]);
 
 transactionsStore.value = useTransactionsStore();
-const { transactions, exp_categories, income_categories, parties, accounts, loading } = storeToRefs(transactionsStore.value);
+const { transactions, exp_categories, expChartData, income_categories, parties, accounts, loading } = storeToRefs(transactionsStore.value);
 const exp_transactions = computed(() => transactions.value.filter(t => t.transaction_type === "Expense"));
 
 const budgets = computed(() => exp_categories.value.filter(e => e.budget_amount != null));
@@ -136,84 +135,60 @@ const budgets = computed(() => exp_categories.value.filter(e => e.budget_amount 
 const totalExpense = computed(() => exp_transactions.value.reduce((total, t) => total + t.amount, 0));
 
 // ====================== Apex Charts ===========================
-// const expCat_total = computed(
-//     () => exp_transactions.value
-//     .reduce((sum, total) => {
-//         let category_name = total.category_name;
-//         if (category_name in sum){
-//             sum[category_name] += total.amount;
-//         } else {
-//             sum[category_name] = total.amount;
-//         }
-//         return sum;
-//     }, {}))
-
-// Watch for changes in the computed totals
-watch(expCat_total, (newVal) => {
-  console.log('Total of Each Category of Expense: ', newVal);
-  console.log("Keys: ", Object.keys(newVal));
-  console.log("Values: ", Object.values(newVal));
-});
-
-const expCat_total = {
-  "Snacks": 593,
-  "Donation": 1540,
-  "Clothings": 500,
-  "Households": 2643,
-  "Travels": 210,
-  "Health": 80,
-  "Grocessories": 210,
-  "Rent": 4500,
-  "Bills & Recharge": 651,
-  "Investment": 399
-}
-
 function generateDistinctVibrantColors(count) {
   const goldenRatio = 0.618033988749895;
   return Array.from({ length: count }, (_, index) => {
-    // Use golden ratio to create evenly distributed hues
     const hue = (index * goldenRatio * 360) % 360;
-    
-    // Alternate saturation and lightness to create more variation
-    const saturation = 70 + (index % 2) * 30; // Alternates between 70% and 100%
-    const lightness = 50 + (index % 3 === 0 ? 10 : 0); // Slight variation in lightness
-    
+
+    const saturation = 70 + (index % 2) * 30; 
+    const lightness = 50 + (index % 3 === 0 ? 10 : 0); 
     return `hsl(${Math.round(hue)}, ${saturation}%, ${lightness}%)`;
   });
 }
 
-const data = {
-    labels: Object.keys(expCat_total),
-    datasets: [
-      {
-        backgroundColor: generateDistinctVibrantColors(Object.keys(expCat_total).length),
-        data: Object.values(expCat_total)
-      }
-    ]
-  }
+const data = ref({
+labels: Object.keys(expChartData.value),
+datasets: [
+    {
+    backgroundColor: generateDistinctVibrantColors(Object.keys(expChartData.value).length),
+    data: Object.values(expChartData.value)
+    }
+]
+})
   
-  const options = {
-    responsive: true,
-    maintainAspectRatio: true,
-    layout: {
-        padding: 10
-    },
-    plugins: {
-        legend: {
-            position: 'right',
-            labels: {
-                boxWidth: 20,
-                font: {
-                    size: 10
-                }
+const options = { 
+responsive: true,
+maintainAspectRatio: true,
+layout: {
+    padding: 10
+},
+plugins: {
+    legend: {
+        position: 'right', 
+        labels: {
+            boxWidth: 20,
+            font: {
+                size: 10
             }
         }
     }
 }
+}
 
+ // Watch for changes in expCat_totals and update chart data
+watch(expChartData, (newVal) => {
+  data.value = {
+    labels: Object.keys(newVal),
+    datasets: [
+      {
+        backgroundColor: generateDistinctVibrantColors(Object.keys(newVal).length),
+        data: Object.values(newVal),
+      },
+    ],
+  };
+  console.log("Chart data updated:", data.value);
+}, { immediate: true });
 
-
-// const { data, options } = chartConfig
 
 
 //  ===================== End Apex Charts =========================

@@ -92,6 +92,8 @@
 
   const toast = useToast();  
   const name = ref();
+  const apiURL = import.meta.env.VITE_API_BASE_URL;
+
   
   const modalTitle = ref("Create Account");
 
@@ -105,7 +107,7 @@
   })
 
   const createAccount = () => {
-    axios.post('https://microfin.ritdos.com/api/account/create', form)
+    axios.post(`${apiURL}/api/account/create`, form)
     .then(() => {
         localStorage.setItem('accountCreated', true);
         window.location.href = '/accounts';

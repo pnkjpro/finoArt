@@ -309,6 +309,7 @@ import { useToast } from "vue-toastification";
 const name = ref();
 const toast = useToast();
 let drawer = ref(false);
+const apiURL = import.meta.env.VITE_API_BASE_URL;
 let showTransactionModal = ref(false);
 let transactions = ref({});
 const transactionsStore = useTransactionsStore();
@@ -360,7 +361,7 @@ const formInitialState = {
 const form = reactive({ ...formInitialState });
 
 const createOrUpdateTransaction = () => {
-  axios.post('https://microfin.ritdos.com/api/transaction/create', form)
+  axios.post(`${apiURL}/api/transaction/create`, form)
   .then(response => {
     localStorage.setItem('transactionCreated', true);
     window.location.reload();

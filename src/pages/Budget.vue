@@ -84,6 +84,7 @@ const toast = useToast();
 const route = useRoute();
 const budgetId = parseInt(route.params.id);
 const isEditable = ref(false);
+const apiURL = import.meta.env.VITE_API_BASE_URL;
 
 const transactionsStore = useTransactionsStore();
 const { exp_categories, transactions } = storeToRefs(transactionsStore);
@@ -98,7 +99,7 @@ const deleteBudget = () => {
   console.log("deleteBudget");
   if (confirm("Are you sure you want to delete this budget?")) {
     axios
-      .delete(`https://microfin.ritdos.com/api/budget/delete/${budgetId}`)
+      .delete(`${apiURL}/api/budget/delete/${budgetId}`)
       .then(() => {
         localStorage.setItem("budgetDeleted", true);
         window.location.href = "/budgets";
@@ -120,7 +121,7 @@ const form = reactive({
 
 const updateBudget = () => {
   axios
-    .post("https://microfin.ritdos.com/api/budget/update", form)
+    .post(`${apiURL}/api/budget/update`, form)
     .then(() => {
       localStorage.setItem('budgetUpdated', true);
       window.location.href = "/budgets";

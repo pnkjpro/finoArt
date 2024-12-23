@@ -156,6 +156,7 @@ import axios from "axios";
 
 const toast = useToast();
 const route = useRoute();
+const apiURL = import.meta.env.VITE_API_BASE_URL;
 const transactionId = parseInt(route.params.id);
 const isEditable = ref(false);
 console.log(transactionId);
@@ -186,7 +187,7 @@ const handleDateChange = (event) => {
 };
 
 const updateTransaction = () => {
-    axios.put('https://microfin.ritdos.com/api/transaction/update', editableTransaction.value)
+    axios.put(`${apiURL}/api/transaction/update`, editableTransaction.value)
     .then(response => {
        isEditable.value = false;
        localStorage.setItem("transactionUpdated", true);
@@ -205,7 +206,7 @@ const formattedCreatedAt = computed(()=>{
 })
 
 const deleteTransaction = () => {
-  axios.delete(`https://microfin.ritdos.com/api/transaction/delete/${transactionId}`)
+  axios.delete(`${apiURL}/api/transaction/delete/${transactionId}`)
     .then(response => {
        isEditable.value = false;
        localStorage.setItem("transactionDeleted", true);

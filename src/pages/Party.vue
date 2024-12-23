@@ -75,6 +75,7 @@ import { format } from "date-fns";
 
     const toast = useToast();
     const route = useRoute();
+    const apiURL = import.meta.env.VITE_API_BASE_URL;
     const partyId = parseInt(route.params.id);
     const isEditable = ref(false);
     
@@ -107,7 +108,7 @@ const formatDate = (date) => {
 
     const deleteParty = () => {
     if (confirm("Are you sure you want to delete this Party?")) {
-        axios.delete(`https://microfin.ritdos.com/api/party/delete/${partyId}`) 
+        axios.delete(`${apiURL}/api/party/delete/${partyId}`) 
         .then(() => {  
             localStorage.setItem("partyDeleted", true);
             window.location.href = '/parties';

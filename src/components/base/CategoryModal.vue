@@ -90,7 +90,7 @@
   import { useTransactionsStore } from "../../stores/transactions";
   
   const name = ref();
-  
+  const apiURL = import.meta.env.VITE_API_BASE_URL;
   const modalTitle = ref("Create Category");
 
   const populate = reactive({
@@ -103,7 +103,7 @@
   })
 
   const createCategory = () => {
-    axios.post('https://microfin.ritdos.com/api/category/create', form)
+    axios.post(`${apiURL}/api/category/create`, form)
     .then(() => {
         console.log('Category created successfully');
         window.location.href = '/categories';

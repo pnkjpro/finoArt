@@ -92,6 +92,7 @@
   
   const name = ref();
   const toast = useToast();
+  const apiURL = import.meta.env.VITE_API_BASE_URL;
   let drawer = ref(false);
   let showTransactionModal = ref(false);
   let transactions = ref({});
@@ -107,7 +108,7 @@
   })
 
   const updateBudget = () => {
-    axios.post('https://microfin.ritdos.com/api/budget/update', form)
+    axios.post(`${apiURL}/api/budget/update`, form)
     .then(() => {
         localStorage.setItem('budgetCreated', true);
         window.location.href = '/budgets';

@@ -46,18 +46,25 @@ import AppLayout from "../components/base/AppLayout.vue";
 import { ref, watch, onMounted, computed } from "vue";
 import { storeToRefs } from "pinia";
 import { useRoute } from 'vue-router';
+import { useToast } from "vue-toastification";
 import CategoryModal from "../components/base/CategoryModal.vue";
 import axios from "axios";
 
+
+const toast = useToast();
 const route = useRoute();
+const apiURL = import.meta.env.VITE_API_BASE_URL;
+const transactionsStore = ref([]);
+transactionsStore.value = useTransactionsStore();
+const { exp_categories, income_categories, loading } = storeToRefs(transactionsStore.value);
 
-const transactionsStore = useTransactionsStore();
-const { exp_categories, income_categories, loading } = storeToRefs(transactionsStore);
-
-const categories = [...exp_categories.value, ...income_categories.value];
-
+// Combine expense and income categories dynamically
+const categories = computed(() => [
+  ...exp_categories.value,
+  ...income_categories.value,
+]);
 onMounted(() => {
-    transactionsStore.fetchAPIs(); 
+    useTransactionsStore().fetchAPIs(); 
 });
 
 // ====================== Open Budget Form Modal =====================
@@ -68,6 +75,7 @@ const createCategory = async() => {
     categoryModal.present();
     const { data } = await categoryModal.onWillDismiss();
     console.log(data);
+    useTransactionsStore().fetchAPIs();
   }
 
   // ====================== Delete Category =====================
@@ -75,12 +83,14 @@ const createCategory = async() => {
   console.log("deleteCategory");
   if (confirm("Are you sure you want to delete this Category?")) {
     axios
-      .delete(`https://microfin.ritdos.com/api/category/delete/${categoryId}`)
+      .delete(`${apiURL}/api/category/delete/${categoryId}`)
       .then(() => {
-        window.location.href = "/categories";
+        useTransactionsStore().fetchAPIs();
+        toast.success("Category deleted successfully");
       })
       .catch((error) => {
         console.error(error);
+        toast.error(error);
       });
   } else {
     console.log("User Cancelled to delete this Category");

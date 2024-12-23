@@ -1,7 +1,6 @@
 import { defineStore, storeToRefs } from "pinia";
-import { ref, reactive, watch, onMounted, computed} from "vue";
+import { ref } from "vue";
 import { useTransactionsStore } from "./transactions";
-import axios from "axios";
 
 
 export const useBudgetStore = defineStore('budgets', () => {

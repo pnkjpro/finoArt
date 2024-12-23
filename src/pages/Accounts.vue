@@ -49,7 +49,7 @@ const toast = useToast();
 
 const transactionsStore = useTransactionsStore();
 const { accounts, loading } = storeToRefs(transactionsStore);
-let filteredAccounts = accounts.value.filter(a => a.account_name !== "Unknown");
+let filteredAccounts = computed(() => accounts.value.filter(a => a.account_name !== "Unknown"));
 
 onMounted(() => {
     transactionsStore.fetchAPIs(); 

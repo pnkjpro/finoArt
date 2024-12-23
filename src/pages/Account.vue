@@ -68,6 +68,7 @@ import axios from "axios";
 
 
     const route = useRoute();
+    const apiURL = import.meta.env.VITE_API_BASE_URL;
     const accountId = parseInt(route.params.id);
     const isEditable = ref(false);
     
@@ -78,7 +79,7 @@ import axios from "axios";
 
     const deleteAccount = () => {
     if (confirm("Are you sure you want to delete this Account?")) {
-        axios.delete(`https://microfin.ritdos.com/api/account/delete/${accountId}`) 
+        axios.delete(`${apiURL}/api/account/delete/${accountId}`) 
         .then(() => { 
             localStorage.setItem("accountDeleted", true); 
             window.location.href = '/accounts'; 
