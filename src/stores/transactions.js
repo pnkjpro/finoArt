@@ -61,17 +61,19 @@ export const useTransactionsStore = defineStore('transactions', () => {
             parties.value = response.data.parties.map((p) => ({
                 id: p.id,
                 party_name: p.name,
+                net_amount: p.net_amount,
+                transactions: p.transactions,
             }));
-            parties.value.push({ id: parties.value.length+1, party_name: "+ Add Party" });
+            parties.value.push({ id: parties.value.length + 1, party_name: "+ Add Party" });
             console.log("Pinia Parties: ", parties.value);
 
             accounts.value = response.data.accounts
-            .map((a) => ({
-                id: a.id,
-                account_name: a.account_name,
-                account_type: a.account_type,
-                account_amount: a.total_amount,
-            }));
+                .map((a) => ({
+                    id: a.id,
+                    account_name: a.account_name,
+                    account_type: a.account_type,
+                    account_amount: a.total_amount,
+                }));
             console.log("Pinia Accounts: ", accounts.value);
         } catch (error) {
             console.error(error);
@@ -108,37 +110,37 @@ export const useTransactionsStore = defineStore('transactions', () => {
 
     const expCat_totals = computed(
         () => transactions.value
-        .filter(t => t.transaction_type === "Expense")
-        .reduce((sum, total) => {
-            let category_name = total.category_name;
-            if (category_name in sum){
-                sum[category_name] += total.amount;
-            } else {
-                sum[category_name] = total.amount;
-            }
-            return sum;
-        }, {}))
-
-        const expChartData = computed(() => {
-            const totals = transactions.value
-              .filter(t => t.transaction_type === "Expense")
-              .reduce((sum, total) => {
+            .filter(t => t.transaction_type === "Expense")
+            .reduce((sum, total) => {
                 let category_name = total.category_name;
                 if (category_name in sum) {
-                  sum[category_name] += total.amount;
+                    sum[category_name] += total.amount;
                 } else {
-                  sum[category_name] = total.amount;
+                    sum[category_name] = total.amount;
                 }
                 return sum;
-              }, {});
-          
-            const sortedTotals = Object.entries(totals)
-              .sort(([, a], [, b]) => b - a) // Compare by values (amounts)
-              .slice(0, 7); // Take the top 6
-          
-            return Object.fromEntries(sortedTotals);
-          });
-          
+            }, {}))
+
+    const expChartData = computed(() => {
+        const totals = transactions.value
+            .filter(t => t.transaction_type === "Expense")
+            .reduce((sum, total) => {
+                let category_name = total.category_name;
+                if (category_name in sum) {
+                    sum[category_name] += total.amount;
+                } else {
+                    sum[category_name] = total.amount;
+                }
+                return sum;
+            }, {});
+
+        const sortedTotals = Object.entries(totals)
+            .sort(([, a], [, b]) => b - a) // Compare by values (amounts)
+            .slice(0, 7); // Take the top 6
+
+        return Object.fromEntries(sortedTotals);
+    });
+
 
     return {
         transactions, expCat_totals, expChartData, exp_categories, income_categories, parties, loan_type, accounts, loading, error,

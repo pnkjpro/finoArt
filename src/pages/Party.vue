@@ -11,7 +11,7 @@
                             <h2>{{ party.party_name }}</h2>
                         </ion-label>   
                     </ion-item>
-                    <ion-list v-for="transaction in partyTransactions" style="width:100%; --inner-border-width: 0;">
+                    <ion-list v-for="transaction in party.transactions" style="width:100%; --inner-border-width: 0;">
                             <ion-item :router-link="'/transaction/' + transaction.id">
                                 <ion-label><h2>{{transaction.category_name }}</h2><p>{{ transaction.description }}</p></ion-label>
                                 <ion-label><h2>&#x20B9 {{transaction.amount }}</h2><p>{{ formatDate(transaction.created_at) }}</p></ion-label>
@@ -21,7 +21,7 @@
                         </ion-list>
                         <ion-item>
                             <ion-label>Total</ion-label>
-                            <ion-label :color="totals.taken > totals.given ? 'danger' : 'success'"><h2>&#x20B9 {{ totals.given - totals.taken  }}</h2></ion-label>
+                            <ion-label :color="party.net_amount > 0 ? 'success' : 'danger'"><h2>&#x20B9 {{ party.net_amount  }}</h2></ion-label>
                         </ion-item>
                     <ion-item style="width:100%; --inner-border-width: 0;">
                         <ion-label @click="deleteParty">
